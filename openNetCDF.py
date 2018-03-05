@@ -85,4 +85,51 @@ def ncdump(nc_fid, verb=True):
 dataset_attrs, dataset_dims, dataset_vars = ncdump(dataset, verb=True)
 
 # Import the variables
+# Write a functions that loads the variable without looking at them
+
+#Fisrt assume that the user (and then the system) will enter (1) the
+# file name (.nc) and the variables of interest which would be 
+# mapped to GSN and therefore CF standard.
+nc_file = "/Volumes/Data HD/Documents/MINT/Climate/netCDFTutorial/test.nc"
+keys = ['latitude','longitude','time','Total precipitation'] 
+
+# Get the necessary information about the netCDF file (i.e. assume that
+# the function above is not being run on a regular basis.)
+
+def getNcVar(nc_file, keys):
+    ''' Extract variables from a netCDF file.
+    
+    This function gets the variable contained in a netCDF file 
+    and return them into a Python dictionary whose keys contain
+    the standard names for each variable.
+    
+    Args:
+        nc_file (str): A name (path) of a netCDF file
+        keys (list): A list of keys to fetch the variables according
+            to the CF standard
+    
+    Returns:
+        dict_out (dict): A dictionary containing the standard names as keys and
+            the associated data as values.
+    '''
+    from netCDF4 import Dataset
+    #Open the netCDF file
+    nc_fid = Dataset(nc_file)
+    # Get the variable names
+    nc_vars = [var for var in nc_fid.variables]
+    # Get the longnames for each variables
+    nc_vars_longname = []
+    for vars in nc_vars:
+        for nc_attr in nc_fid.variables[vars].ncattrs():
+            if nc_attr == 'long_name':
+                nc_vars_longname.append(nc_fid.variables[vars].getncattr(nc_attr)) 
+    # Check for the list against the desired variables and output.
+    dict_out ={}
+    for name in nc_vars_longname:
+        if name in keys:
+            idx = nc_vars_longname.index(name)
+            dict_out[name] = nc_fid.variables[nc_vars[idx]][:]
+    
+    return dict_out
+
  

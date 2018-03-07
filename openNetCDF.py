@@ -100,8 +100,9 @@ def getNcVar(nc_file, keys):
     ''' Extract variables from a netCDF file.
     
     This function gets the variable contained in a netCDF file 
-    and return them into a Python dictionary whose keys contain
-    the standard names for each variable.
+    and return them into Python nested dictionaries. The first
+    dictionary's key contains the CF longname, while the
+    second dictionary contains values and units.
     
     Args:
         nc_file (str): A name (path) of a netCDF file
@@ -119,17 +120,25 @@ def getNcVar(nc_file, keys):
     nc_vars = [var for var in nc_fid.variables]
     # Get the longnames for each variables
     nc_vars_longname = []
+    nc_vars_units =[]
+    
     for vars in nc_vars:
         for nc_attr in nc_fid.variables[vars].ncattrs():
             if nc_attr == 'long_name':
-                nc_vars_longname.append(nc_fid.variables[vars].getncattr(nc_attr)) 
+                nc_vars_longname.append(nc_fid.variables[vars].getncattr(nc_attr))
+            elif nc_attr == 'units':
+                nc_vars_units.append(nc_fid.variables[vars].getncattr(nc_attr))
     # Check for the list against the desired variables and output.
     dict_out ={}
     for name in nc_vars_longname:
         if name in keys:
+            f = {'values':[],'units':[]}
             idx = nc_vars_longname.index(name)
-            dict_out[name] = nc_fid.variables[nc_vars[idx]][:]
-    
+            f['values']=nc_fid.variables[nc_vars[idx]][:]
+            f['units']=nc_vars_units[idx]
+            dict_out[name] = f
+               
     return dict_out
 
- 
+#Run the example
+dict_out = getNcVar(nc_file, keys) 

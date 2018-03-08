@@ -14,3 +14,4 @@ file = "/Volumes/Data HD/Documents/MINT/Climate/netCDFTutorial/test.grib"
 
 # Open the file
 grbs = pygrib.open(file)
+grb = grbs.select(name='Total precipitation')[0]

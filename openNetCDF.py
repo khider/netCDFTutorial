@@ -6,8 +6,6 @@ Created on Mon Feb 26 13:58:13 2018
 @author: deborahkhider
 """
 
-import datetime as dt  # Python standard library datetime  module
-import numpy as np
 from netCDF4 import Dataset  
 
 # Open the example netCDF file
@@ -102,7 +100,7 @@ def getNcVar(nc_file, keys):
     This function gets the variable contained in a netCDF file 
     and return them into Python nested dictionaries. The first
     dictionary's key contains the CF longname, while the
-    second dictionary contains values and units.
+    second dictionary contains values, units and the missing data flag.
     
     Args:
         nc_file (str): A name (path) of a netCDF file
@@ -121,21 +119,43 @@ def getNcVar(nc_file, keys):
     # Get the longnames for each variables
     nc_vars_longname = []
     nc_vars_units =[]
+    #Add corrections if needed
+    nc_vars_scale_factor=[]
+    nc_vars_add_offset=[]
+    # Check the missing value tags
+    nc_vars_missing_value=[]
     
     for vars in nc_vars:
-        for nc_attr in nc_fid.variables[vars].ncattrs():
-            if nc_attr == 'long_name':
-                nc_vars_longname.append(nc_fid.variables[vars].getncattr(nc_attr))
-            elif nc_attr == 'units':
-                nc_vars_units.append(nc_fid.variables[vars].getncattr(nc_attr))
+        if 'long_name' in nc_fid.variables[vars].ncattrs():
+            nc_vars_longname.append(nc_fid.variables[vars].getncattr('long_name'))
+        else:
+            nc_vars_longname.append(vars)
+        if 'units' in nc_fid.variables[vars].ncattrs():
+            nc_vars_units.append(nc_fid.variables[vars].getncattr('units'))
+        else:
+            nc_vars_units.append('NA')
+        if 'scale_factor' in nc_fid.variables[vars].ncattrs():
+            nc_vars_scale_factor.append(nc_fid.variables[vars].getncattr('scale_factor'))
+        else:
+            nc_vars_scale_factor.append(1)
+        if 'add_offset' in nc_fid.variables[vars].ncattrs():
+            nc_vars_add_offset.append(nc_fid.variables[vars].getncattr('add_offset'))
+        else:
+            nc_vars_add_offset.append(0) 
+        if 'missing_value' in nc_fid.variables[vars].ncattrs(): 
+            nc_vars_missing_value.append(nc_fid.variables[vars].getncattr('missing_value'))
+        else:
+            nc_vars_missing_value.append('NA')
     # Check for the list against the desired variables and output.
     dict_out ={}
     for name in nc_vars_longname:
         if name in keys:
-            f = {'values':[],'units':[]}
+            f = {'values':[],'units':[],'missing_value':[]}
             idx = nc_vars_longname.index(name)
-            f['values']=nc_fid.variables[nc_vars[idx]][:]
+            f['values']=(nc_fid.variables[nc_vars[idx]][:]/nc_vars_scale_factor[idx])\
+                +nc_vars_add_offset[idx]
             f['units']=nc_vars_units[idx]
+            f['missing_value'] = nc_vars_missing_value[idx]
             dict_out[name] = f
                
     return dict_out

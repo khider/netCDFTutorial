@@ -11,6 +11,7 @@ initializing TOPOFLOW
 """
 
 from netCDF4 import Dataset 
+import numpy as np
 
 file = "/Volumes/Data HD/Documents/MINT/Climate/netCDFTutorial/Example.nc"
 
@@ -84,10 +85,26 @@ def getNcVar(nc_file, keys):
             f['values']=(nc_fid.variables[nc_vars[idx]][:]*nc_vars_scale_factor[idx])\
                 +nc_vars_add_offset[idx]
             f['units']=nc_vars_units[idx]
-            f['missing_value'] = (nc_vars_missing_value[idx]*nc_vars_scale_factor[idx])\
-                +nc_vars_add_offset[idx]
+            f['missing_value'] = nc_vars_missing_value[idx]
             dict_out[name] = f
                
     return dict_out
 
 dict_out =  getNcVar(file,keys)   
+
+# Data manipulation
+# 1. Relative humidity calculation
+TD = np.array(dict_out['2 metre dewpoint temperature']['values'])
+T = np.array(dict_out['2 metre temperature']['values'])
+RH = 100*(np.exp((17.625*TD)/(243.04+TD))/np.exp((17.625*T)/(243.04+T)))
+
+# put in dict_out
+dict_out['relative humidity']={'values':RH,'units':'NA'} 
+
+#2. wind speed
+U = np.array(dict_out['10 metre U wind component']['values'])
+V = np.array(dict_out['10 metre V wind component']['values'])
+
+W = np.sqrt(U**2+V**2)
+
+dict_out['wind speed']={'values':W,'units':dict_out['10 metre V wind component']['units']} 

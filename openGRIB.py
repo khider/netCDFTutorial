@@ -60,7 +60,7 @@ def getGribVar(grib_file, keys):
         dict_out[key] = {'values':vars_values, 'units':grb.parameterUnits,'missing_values':grb.missingValue}    
         
         return dict_out
-                
+
 #Exanple
 
 dict_out =  getGribVar(file,keys)           

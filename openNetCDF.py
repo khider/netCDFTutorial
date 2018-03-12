@@ -155,8 +155,7 @@ def getNcVar(nc_file, keys):
             f['values']=(nc_fid.variables[nc_vars[idx]][:]*nc_vars_scale_factor[idx])\
                 +nc_vars_add_offset[idx]
             f['units']=nc_vars_units[idx]
-            f['missing_value'] = (nc_vars_missing_value[idx]*nc_vars_scale_factor[idx])\
-                +nc_vars_add_offset[idx]
+            f['missing_value'] = nc_vars_missing_value[idx]
             dict_out[name] = f
                
     return dict_out

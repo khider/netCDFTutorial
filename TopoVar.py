@@ -29,8 +29,9 @@ def getNcVar(nc_file, keys):
     
     This function gets the variable contained in a netCDF file 
     and return them into Python nested dictionaries. The first
-    dictionary's key contains the CF longname, while the
-    second dictionary contains values, units and the missing data flag.
+    dictionary's key contains the longname, while the
+    second dictionary contains values, standard name (CF),
+    units and the missing data flag.
     
     Args:
         nc_file (str): A name (path) of a netCDF file
@@ -48,7 +49,10 @@ def getNcVar(nc_file, keys):
     nc_vars = [var for var in nc_fid.variables]
     # Get the longnames for each variables
     nc_vars_longname = []
+    #Get the units
     nc_vars_units =[]
+    # Get the standard name
+    nc_vars_standardname=[]
     #Add corrections if needed
     nc_vars_scale_factor=[]
     nc_vars_add_offset=[]
@@ -64,6 +68,10 @@ def getNcVar(nc_file, keys):
             nc_vars_units.append(nc_fid.variables[vars].getncattr('units'))
         else:
             nc_vars_units.append('NA')
+        if 'standard_name' in nc_fid.variables[vars].ncattrs():
+            nc_vars_standardname.append(nc_fid.variables[vars].getncattr('standard_name'))
+        else:
+            nc_vars_standardname.append('NA')    
         if 'scale_factor' in nc_fid.variables[vars].ncattrs():
             nc_vars_scale_factor.append(nc_fid.variables[vars].getncattr('scale_factor'))
         else:
@@ -80,12 +88,13 @@ def getNcVar(nc_file, keys):
     dict_out ={}
     for name in nc_vars_longname:
         if name in keys:
-            f = {'values':[],'units':[],'missing_value':[]}
+            f = {'values':[],'units':[],'missing_value':[],'standard_name':{}}
             idx = nc_vars_longname.index(name)
             f['values']=(nc_fid.variables[nc_vars[idx]][:]*nc_vars_scale_factor[idx])\
                 +nc_vars_add_offset[idx]
             f['units']=nc_vars_units[idx]
             f['missing_value'] = nc_vars_missing_value[idx]
+            f['standard_name'] = nc_vars_standardname[idx]
             dict_out[name] = f
                
     return dict_out

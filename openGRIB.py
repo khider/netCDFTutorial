@@ -24,8 +24,9 @@ def getGribVar(grib_file, keys):
     
     This function gets the variable contained in a GRIB file 
     and return them into Python nested dictionaries. The first
-    dictionary's key contains the CF longname, while the
-    second dictionary contains values, units and the missing data flag.
+    dictionary's key contains the longname, while the
+    second dictionary contains values, the standard CF name,
+    units and the missing data flag.
     
     Args:
         grib_file (str): A name (path) of a GRIB file
@@ -57,7 +58,7 @@ def getGribVar(grib_file, keys):
             dict_out['latitude']={'values':lats}
             dict_out['longitude']={'values':longs}
             dict_out['time']={'values':vars_time}
-        dict_out[key] = {'values':vars_values, 'units':grb.parameterUnits,'missing_values':grb.missingValue}    
+        dict_out[key] = {'values':vars_values, 'units':grb.parameterUnits,'missing_values':grb.missingValue, 'standard_name':grb.cfName}    
         
         return dict_out
 

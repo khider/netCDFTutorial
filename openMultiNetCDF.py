@@ -19,12 +19,32 @@ for name in files:
     
 #Open the file and get the keys for this example
 nc_fid = MFDataset(file_names)
-# Get the variables
-nc_vars = [var for var in nc_fid.variables]
-# Get the keys
-keys = []    
-for vars in nc_vars:
-    keys.append(nc_fid.variables[vars].getncattr('long_name'))
+
+# First let's print out the file
+def MFncdump(nc_fid):
+    """
+    MFncdump prints dimensions, variables and their attribute info
+    
+    Args:
+        nc_fid: a netCDF file    
+    """
+        
+    # Global attributes
+    print("NetCDF Global Attributes: ")
+    for name in nc_fid.ncattrs():
+        print('\t'+name+": "+getattr(nc_fid,name))
+
+    #Dimension shape information
+    print("NetCDF dimension information: ")
+    nc_dims = [dim for dim in nc_fid.dimensions]
+    for dim in nc_dims:
+        print('\t'+dim+': ')
+        for attrname in nc_fid.variables[dim].ncattrs():
+            print('\t\t'+attrname+": "+getattr(nc_fid.variables[dim], attrname))
+    #Variables information
+    print("NetCDF variables information: ")
+    for name, variable in nc_fid.variables.items():
+        for attrname in variable.        
  
 # Import the package
 from netCDF4 import MFDataset
